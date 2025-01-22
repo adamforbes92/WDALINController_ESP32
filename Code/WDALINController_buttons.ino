@@ -8,13 +8,31 @@ void intSingleRelease() {
   wiperInt = false;     // clear the flags - robustness
 }
 void intAdjustSpeed() {
-  // add 4 to the interval speed.  Rollover at >7
-  intervalSpeed++;
-  preferences.putInt("intervalSpeed", intervalSpeed);
-
-  if (intervalSpeed >= 7) {
-    intervalSpeed = 1;
+  switch (linType) {
+    case LIN_WDA:
+      intervalSpeed = intervalSpeed + 4;  // Bosch starts at 1 and adds 4 each time
+      if (intervalSpeed >= maxIntervalCount) {
+        intervalSpeed = 1;
+      }
+      break;
+    case LIN_Ford:
+      intervalSpeed++;  // Ford starts at 1 and adds 1 each time
+      if (intervalSpeed >= maxIntervalCount) {
+        intervalSpeed = 1;
+      }
+      break;
+    case LIN_VW:
+      intervalSpeed++;  // Ford starts at 1 and adds 1 each time
+      if (intervalSpeed > maxIntervalCount) {
+        intervalSpeed = 1;
+      }
+      break;
+    default:
+      // do nothing
+      break;
   }
+
+  preferences.putInt("intervalSpeed", intervalSpeed);
 }
 
 void intHold() {

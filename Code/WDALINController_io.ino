@@ -1,59 +1,75 @@
 void basicInit() {
-#if stateDebug
+#if serialDebug
   Serial.begin(115200);
-  Serial.println(F("Ford LIN Wiper Controller Initialising..."));
+  Serial.println(F("LIN Wiper Controller Initialising..."));
 #endif
 
-#if stateDebug
+#if serialDebug
   Serial.println(F("Preferences Initialising..."));
 #endif
   preferences.begin("settings", false);
-  intervalSpeed = preferences.getInt("intervalSpeed", 0);
+  intervalSpeed = preferences.getInt("intervalSpeed", 1);
   if (intervalSpeed != 0) {
     lastIntervalSpeed = intervalSpeed;
   }
-#if stateDebug
-  Serial.println(intervalSpeed);
+#if serialDebug
+  Serial.println(F("Interval Speed (from preferences):" );
+  Serial.print(intervalSpeed);
 #endif
 
+#if serialDebug
+  Serial.println(F("IO Initialising..."));
+#endif
   setupPins();  // setup pins for IO
-  LIN.begin(linBaud);
-
-#if stateDebug
-  Serial.println(F("Ford LIN Wiper Controller Initialised, LIN started!"));
+#if serialDebug
+  Serial.println(F("IO Initialised!"));
 #endif
 
-#if stateDebug
+#if serialDebug
+  Serial.println(F("LIN Initialising..."));
+#endif
+  LIN.begin(linBaud);
+#if serialDebug
+  Serial.println(F("LIN Initialised!"));
+#endif
+
+#if serialDebug
   Serial.println(F("Setting up buttons as inputs..."));
 #endif
   setupButtons();
-#if stateDebug
+#if serialDebug
   Serial.println(F("Buttons setup!"));
+#endif
+
+#if serialDebug
+  Serial.println(F("LIN Wiper Controller Initialised!"));
 #endif
 }
 
 void setupPins() {
-  // setup the pins for input/output
-  pinMode(pinCS, OUTPUT);
-  pinMode(pinWake, OUTPUT);
-
-  // drive CS & Wake high to use the LIN chip
-  digitalWrite(pinCS, HIGH);
-  digitalWrite(pinWake, HIGH);
-
-// setup the wiper position inputs
-#if testLED
-  pinMode(pinInt, OUTPUT);
-  pinMode(pinPos1, OUTPUT);
-  pinMode(pinPos2, OUTPUT);
+  // setup the wiper position inputs
+  pinMode(pinIntLED, OUTPUT);
+  pinMode(pinPos1LED, OUTPUT);
+  pinMode(pinPos2LED, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
-  blinkLED(500, intervalSpeed, true, false);
+
+#if testLED
+  blinkLED(500, 4, true, false);
 #endif
 
+  // reset LED to pull high
+  digitalWrite(pinIntLED, HIGH);
+  digitalWrite(pinPos1LED, HIGH);
+  digitalWrite(pinPos2LED, HIGH);
+
   // reset buttons if testLED is used (can be removed if 'testLED' is not used but keeping here for solidness)
-  pinMode(pinInt, INPUT_PULLUP);
-  pinMode(pinPos1, INPUT_PULLUP);
-  pinMode(pinPos2, INPUT_PULLUP);
+  pinMode(pinIntNeg, INPUT_PULLUP);
+  pinMode(pinPos1Neg, INPUT_PULLUP);
+  pinMode(pinPos2Neg, INPUT_PULLUP);
+
+  pinMode(pinIntPos, INPUT_PULLDOWN);
+  pinMode(pinPos1Pos, INPUT_PULLDOWN);
+  pinMode(pinPos2Pos, INPUT_PULLDOWN);
 }
 
 void setupButtons() {
@@ -67,4 +83,31 @@ void setupButtons() {
   btnPos1.attachContinuousNotHeld(pos1Release);  // call pos1Release if the button is now not held (clears flags)
   btnPos2.attachContinuousHold(pos2Hold);        // call pos1Hold if the button is 'always down'
   btnPos2.attachContinuousNotHeld(pos2Release);  // call pos2Release if the button is now not held (clears flags)
+}
+
+void LED() {
+  // for following inputs if enabled
+  if (wiperInt) {
+    digitalWrite(pinIntLED, LOW);
+  } else {
+    digitalWrite(pinIntLED, HIGH);
+  }
+
+  if (wiperPos1) {
+    digitalWrite(pinPos1LED, LOW);
+  } else {
+    digitalWrite(pinPos1LED, HIGH);
+  }
+
+  if (wiperPos2) {
+    digitalWrite(pinPos2LED, LOW);
+  } else {
+    digitalWrite(pinPos2LED, HIGH);
+  }
+
+  if (hasError) {
+    digitalWrite(LED_BUILTIN, HIGH);
+  } else {
+    digitalWrite(LED_BUILTIN, LOW);
+  }
 }

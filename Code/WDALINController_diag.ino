@@ -11,22 +11,28 @@ void printBits(byte myByte) {
 
 void blinkLED(int duration, int flashes, bool test, bool builtIn) {
   if (test) {
-    pinMode(pinInt, OUTPUT);
-    pinMode(pinPos1, OUTPUT);
-    pinMode(pinPos2, OUTPUT);
     for (int i = 0; i < flashes; i++) {
+#if serialDebug
+      Serial.println(F("Flashing onboard LEDs..."));
+#endif
       delay(duration);
-      digitalWrite(pinInt, HIGH);
-      digitalWrite(pinPos1, HIGH);
-      digitalWrite(pinPos2, HIGH);
+      digitalWrite(pinIntLED, LOW);
+      digitalWrite(pinPos1LED, LOW);
+      digitalWrite(pinPos2LED, LOW);
       delay(duration);
-      digitalWrite(pinInt, LOW);
-      digitalWrite(pinPos1, LOW);
-      digitalWrite(pinPos2, LOW);
+      digitalWrite(pinIntLED, HIGH);
+      digitalWrite(pinPos1LED, HIGH);
+      digitalWrite(pinPos2LED, HIGH);
     }
+#if serialDebug
+    Serial.println(F("Flashing onboard LEDs Complete!"));
+#endif
   }
 
   if (builtIn) {
+#if serialDebug
+    Serial.println(F("Flashing builtin LED..."));
+#endif
     pinMode(LED_BUILTIN, OUTPUT);
     for (int i = 0; i < flashes; i++) {
       delay(duration);
@@ -34,7 +40,9 @@ void blinkLED(int duration, int flashes, bool test, bool builtIn) {
       delay(duration);
       digitalWrite(LED_BUILTIN, LOW);
     }
+#if serialDebug
+    Serial.println(F("Flashing builtin LED Complete!"));
+#endif
   }
-  setupPins();
 }
 // end diag
